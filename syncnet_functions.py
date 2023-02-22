@@ -49,6 +49,7 @@ def load_pretrained_syncnet_model(version='v4', mode='both', verbose=False):
             set_syncnet_weights_to_syncnet_model(syncnet_model=syncnet_model,
                                                  syncnet_weights=syncnet_weights,
                                                  syncnet_layer_names=syncnet_layer_names,
+                                                 start_idx=audio_start_idx,
                                                  mode=mode,
                                                  verbose=verbose)
         else:
@@ -56,12 +57,14 @@ def load_pretrained_syncnet_model(version='v4', mode='both', verbose=False):
             set_syncnet_weights_to_syncnet_model(syncnet_model=syncnet_model[0],
                                                  syncnet_weights=syncnet_weights,
                                                  syncnet_layer_names=syncnet_layer_names,
+                                                 start_idx=audio_start_idx,
                                                  mode='audio',
                                                  verbose=verbose)
             # Lip
             set_syncnet_weights_to_syncnet_model(syncnet_model=syncnet_model[1],
                                                  syncnet_weights=syncnet_weights,
                                                  syncnet_layer_names=syncnet_layer_names,
+                                                 start_idx=lip_start_idx,
                                                  mode='lip',
                                                  verbose=verbose)
 
@@ -131,9 +134,9 @@ def load_syncnet_weights(version='v4', verbose=False):
 
     # Read weights file, with layer names
     with h5py.File(syncnet_weights_file, 'r') as f:
-        syncnet_weights = [f[v[0]][:] for v in f['net/params/value']]
-        syncnet_layer_names = [[chr(i) for i in  f[n[0]]] \
-                               for n in f['net/layers/name']]
+        syncnet_weights = [f[v[0]][:] for v in f['params/value']]
+        syncnet_layer_names = [[chr(i[0]) for i in f[n[0]]] \
+                               for n in f['layers/name']]
 
     # Find the starting index of audio and lip layers
     audio_found = False
@@ -188,17 +191,14 @@ def load_syncnet_weights(version='v4', verbose=False):
 def set_syncnet_weights_to_syncnet_model(syncnet_model,
                                          syncnet_weights,
                                          syncnet_layer_names,
+                                         start_idx,
                                          mode = 'lip',
                                          verbose=False):
 
     if verbose:
         print("Setting weights to model:")
 
-    # Video syncnet-related weights begin at 35 in syncnet_weights
-    if mode == 'lip':
-        syncnet_weights_idx = 35
-    else:
-        syncnet_weights_idx = 0
+    syncnet_weights_idx = start_idx
 
     if mode == 'both':
         syncnet_lip_model = syncnet_model[0]
@@ -285,7 +285,7 @@ def syncnet_lip_model_v4():
         input_shape=input_shape))  # (None, 110, 110, 96)
 
     # bn1_lip
-    lip_model_v4.add(BatchNormalization(name='bn1_lip'))
+    # lip_model_v4.add(BatchNormalization(name='bn1_lip'))
 
     # relu1_lip
     lip_model_v4.add(Activation('relu', name='relu1_lip'))
@@ -297,7 +297,7 @@ def syncnet_lip_model_v4():
     lip_model_v4.add(Conv2D(256, (5, 5), padding='valid', name='conv2_lip'))   # (None, 256, 50, 50)
 
     # bn2_lip
-    lip_model_v4.add(BatchNormalization(name='bn2_lip'))
+    # lip_model_v4.add(BatchNormalization(name='bn2_lip'))
 
     # relu2_lip
     lip_model_v4.add(Activation('relu', name='relu2_lip'))
@@ -309,7 +309,7 @@ def syncnet_lip_model_v4():
     lip_model_v4.add(Conv2D(512, (3, 3), padding='valid', name='conv3_lip'))   # (None, 22, 22, 512)
 
     # bn3_lip
-    lip_model_v4.add(BatchNormalization(name='bn3_lip'))
+    # lip_model_v4.add(BatchNormalization(name='bn3_lip'))
 
     # relu3_lip
     lip_model_v4.add(Activation('relu', name='relu3_lip'))
@@ -318,7 +318,7 @@ def syncnet_lip_model_v4():
     lip_model_v4.add(Conv2D(512, (3, 3), padding='valid', name='conv4_lip'))   # (None, 20, 20, 512)
 
     # bn4_lip
-    lip_model_v4.add(BatchNormalization(name='bn4_lip'))
+    # lip_model_v4.add(BatchNormalization(name='bn4_lip'))
 
     # relu4_lip
     lip_model_v4.add(Activation('relu', name='relu4_lip'))
@@ -327,7 +327,7 @@ def syncnet_lip_model_v4():
     lip_model_v4.add(Conv2D(512, (3, 3), padding='valid', name='conv5_lip'))   # (None, 18, 18, 512)
 
     # bn5_lip
-    lip_model_v4.add(BatchNormalization(name='bn5_lip'))
+    # lip_model_v4.add(BatchNormalization(name='bn5_lip'))
 
     # relu5_lip
     lip_model_v4.add(Activation('relu', name='relu5_lip'))
@@ -340,7 +340,7 @@ def syncnet_lip_model_v4():
     lip_model_v4.add(Dense(256, name='fc6_lip'))    # (None, 256)
 
     # bn6_lip
-    lip_model_v4.add(BatchNormalization(name='bn6_lip'))
+    # lip_model_v4.add(BatchNormalization(name='bn6_lip'))
 
     # relu6_lip
     lip_model_v4.add(Activation('relu', name='relu6_lip'))
@@ -374,7 +374,7 @@ def syncnet_audio_model_v4():
         input_shape=input_shape))  # (None, 12, 20, 64)
 
     # bn1_audio
-    audio_model_v4.add(BatchNormalization(name='bn1_audio'))
+    # audio_model_v4.add(BatchNormalization(name='bn1_audio'))
 
     # relu1_audio
     audio_model_v4.add(Activation('relu', name='relu1_audio'))
@@ -383,7 +383,7 @@ def syncnet_audio_model_v4():
     audio_model_v4.add(Conv2D(128, (3, 3), padding='same', name='conv2_audio'))   # (None, 12, 20, 128)
 
     # bn2_audio
-    audio_model_v4.add(BatchNormalization(name='bn2_audio'))
+    # audio_model_v4.add(BatchNormalization(name='bn2_audio'))
 
     # relu2_audio
     audio_model_v4.add(Activation('relu', name='relu2_audio'))
@@ -395,7 +395,7 @@ def syncnet_audio_model_v4():
     audio_model_v4.add(Conv2D(256, (3, 3), padding='same', name='conv3_audio'))   # (None, 12, 9, 256)
 
     # bn3_audio
-    audio_model_v4.add(BatchNormalization(name='bn3_audio'))
+    # audio_model_v4.add(BatchNormalization(name='bn3_audio'))
 
     # relu3_audio
     audio_model_v4.add(Activation('relu', name='relu3_audio'))
@@ -404,7 +404,7 @@ def syncnet_audio_model_v4():
     audio_model_v4.add(Conv2D(256, (3, 3), padding='same', name='conv4_audio'))   # (None, 12, 9, 256)
 
     # bn4_audio
-    audio_model_v4.add(BatchNormalization(name='bn4_audio'))
+    # audio_model_v4.add(BatchNormalization(name='bn4_audio'))
 
     # relu4_audio
     audio_model_v4.add(Activation('relu', name='relu4_audio'))
@@ -413,7 +413,7 @@ def syncnet_audio_model_v4():
     audio_model_v4.add(Conv2D(256, (3, 3), padding='same', name='conv5_audio'))   # (None, 12, 9, 256)
 
     # bn5_audio
-    audio_model_v4.add(BatchNormalization(name='bn5_audio'))
+    # audio_model_v4.add(BatchNormalization(name='bn5_audio'))
 
     # relu5_audio
     audio_model_v4.add(Activation('relu', name='relu5_audio'))
@@ -426,7 +426,7 @@ def syncnet_audio_model_v4():
     audio_model_v4.add(Dense(256, name='fc6_audio'))    # (None, 256)
 
     # bn6_audio
-    audio_model_v4.add(BatchNormalization(name='bn6_audio'))
+    # audio_model_v4.add(BatchNormalization(name='bn6_audio'))
 
     # relu6_audio
     audio_model_v4.add(Activation('relu', name='relu6_audio'))
@@ -435,7 +435,7 @@ def syncnet_audio_model_v4():
     audio_model_v4.add(Dense(128, name='fc7_audio'))    # (None, 128)
 
     # bn7_audio
-    audio_model_v4.add(BatchNormalization(name='bn7_audio'))
+    # audio_model_v4.add(BatchNormalization(name='bn7_audio'))
 
     # relu7_audio
     audio_model_v4.add(Activation('relu', name='relu7_audio'))

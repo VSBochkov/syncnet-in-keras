@@ -10,7 +10,7 @@ version = 'v4'
 
 # mode = 'both'
 mode = 'both'
-syncnet_audio_model, syncnet_lip_model = load_pretrained_syncnet_model(version=version, mode=mode, verbose=False)
+syncnet_audio_model, syncnet_lip_model = load_pretrained_syncnet_model(version=version, mode=mode, verbose=True)
 
 # # mode = 'audio'
 # mode = 'audio'
